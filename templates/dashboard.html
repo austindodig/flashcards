@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ user.username }}!</h1>
+    <p>Your current score: {{ user.score }}</p>
+    <p>Progress: {{ user.progress }}</p>
+    <a href="/study">Study Mode</a> | <a href="/quiz">Self-Quiz Mode</a> | <a href="/competition">Competition Mode</a>
+    <br>
+    <a href="/">Log Out</a>
+</body>
+</html>

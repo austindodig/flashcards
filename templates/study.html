@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Mode</title>
+</head>
+<body>
+    <h1>Study Mode</h1>
+    <form method="POST">
+        <label for="topic">Select a topic:</label>
+        <select name="topic" id="topic" required>
+            {% for topic in topics %}
+                <option value="{{ topic }}">{{ topic }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Start</button>
+    </form>
+
+    {% if current_question %}
+        <div>
+            <h2>Question {{ question_index + 1 }} of {{ total }}</h2>
+            <p id="flashcard">
+                {{ current_question['Question'] }}
+            </p>
+            <button id="toggle-answer">Show Answer</button>
+            <p id="answer" style="display:none;">
+                {{ current_question['Answer'] }}
+            </p>
+        </div>
+        <div>
+            <button id="previous" {% if question_index == 0 %}disabled{% endif %}>Previous</button>
+            <button id="next" {% if question_index == total - 1 %}disabled{% endif %}>Next</button>
+        </div>
+    {% endif %}
+
+    <script>
+        const toggleAnswerBtn = document.getElementById('toggle-answer');
+        const answerElement = document.getElementById('answer');
+
+        toggleAnswerBtn.addEventListener('click', () => {
+            if (answerElement.style.display === 'none') {
+                answerElement.style.display = 'block';
+                toggleAnswerBtn.innerText = 'Hide Answer';
+            } else {
+                answerElement.style.display = 'none';
+                toggleAnswerBtn.innerText = 'Show Answer';
+            }
+        });
+
+        const navigate = (action) => {
+            fetch('/study/navigation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error) {
+                    window.location.reload();
+                }
+            });
+        };
+
+        document.getElementById('previous').addEventListener('click', () => navigate('previous'));
+        document.getElementById('next').addEventListener('click', () => navigate('next'));
+    </script>
+</body>
+</html>
