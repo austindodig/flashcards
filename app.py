@@ -9,7 +9,7 @@ import pandas as pd
 import random  # For random question selection
 import eventlet
 import json
-from flask_migrate import Migrate
+#from flask_migrate import Migrate
 
 
 eventlet.monkey_patch()
@@ -33,7 +33,7 @@ class User(db.Model):
     progress = db.Column(db.String(256), default="")
     important_questions = db.Column(db.Text, default="")
 
-migrate = Migrate(app, db)
+#migrate = Migrate(app, db)
 
 # Load questions from Excel
 QUESTIONS_FILE = 'questions.csv'
