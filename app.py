@@ -25,10 +25,10 @@ class User(db.Model):
     progress = db.Column(db.String(256), default="")
 
 # Load questions from Excel
-QUESTIONS_FILE = 'questions.xlsx'
+QUESTIONS_FILE = 'questions.csv'
 if not os.path.exists(QUESTIONS_FILE):
     raise FileNotFoundError("The questions.xlsx file is missing in the project folder.")
-questions_df = pd.read_excel(QUESTIONS_FILE)
+questions_df = pd.read_csv(QUESTIONS_FILE)
 
 # Routes
 @app.route('/')
