@@ -8,6 +8,9 @@ import os
 import pandas as pd
 import random  # For random question selection
 import eventlet
+import json
+from flask_migrate import Migrate
+
 
 eventlet.monkey_patch()
 
@@ -28,6 +31,9 @@ class User(db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     score = db.Column(db.Integer, default=0)
     progress = db.Column(db.String(256), default="")
+    important_questions = db.Column(db.Text, default="")
+
+migrate = Migrate(app, db)
 
 # Load questions from Excel
 QUESTIONS_FILE = 'questions.csv'
@@ -74,8 +80,11 @@ def signup():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
     user = User.query.get(session['user_id'])
-    return render_template('dashboard.html', user=user)
+    important_questions = session.get('important_questions', [])
+    return render_template('dashboard.html', user=user, important_questions=important_questions)
+
 
 @app.route('/study', methods=['GET', 'POST'])
 def study():
@@ -163,22 +172,6 @@ def study_navigation():
     return jsonify({"question_index": current_question_index})
 
 
-@app.route('/study/mark_important', methods=['POST'])
-def mark_important():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    data = request.get_json()
-    question_index = data.get('question_index')
-    important_questions = session.get('important_questions', [])
-    
-    if question_index not in important_questions:
-        important_questions.append(question_index)
-        session['important_questions'] = important_questions
-    
-    return jsonify({"success": True})
-
-
 
 @app.route('/logout')
 def logout():
@@ -204,6 +197,53 @@ def reset_questions():
 def debug_questions():
     return jsonify(questions_df.to_dict(orient='records'))
 
+import json  # To handle serialization
+
+@app.route('/study/mark_important', methods=['POST'])
+def mark_important():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    data = request.get_json()
+    question_index = data.get('question_index')
+    study_questions = session.get('study_questions', [])
+    
+    if study_questions and question_index is not None:
+        question = study_questions[question_index]
+        topic = question.get('Topic', 'Unknown Topic')
+        important_questions = session.get('important_questions', [])
+
+        question_entry = {'topic': topic, 'question': question['Question'], 'answer': question['Answer']}
+        
+        if question_entry not in important_questions:
+            important_questions.append(question_entry)
+            session['important_questions'] = important_questions
+
+    return jsonify({"success": True})
+
+@app.route('/important/remove', methods=['POST'])
+def remove_important():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    data = request.get_json()
+    question_to_remove = data.get('question')
+
+    important_questions = session.get('important_questions', [])
+    updated_questions = [q for q in important_questions if q['question'] != question_to_remove]
+    session['important_questions'] = updated_questions
+
+    return jsonify({"success": True})
+
+
+@app.route('/important_questions')
+def important_questions():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    important_questions = session.get('important_questions', [])
+    return render_template('important_questions.html', important_questions=important_questions)
+
 # Debug: Print all routes
 print(app.url_map)
 
@@ -212,5 +252,5 @@ print(app.url_map)
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    socketio.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 25002)), debug=True)
+    socketio.run(app, host='127.0.0.1', port=int(os.environ.get('PORT', 25002)), debug=True)
 

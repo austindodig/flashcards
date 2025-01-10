@@ -146,14 +146,27 @@ button#toggle-answer:hover {
     flex: 1;
 }
 
-/* Reset Button */
+/* Style for the reset button container */
+.reset-container {
+    text-align: center; /* Center the button horizontally */
+    margin-top: 10px; /* Add space above the button */
+}
+
+/* Style for the reset button */
 .reset-button {
-    background: linear-gradient(135deg, #ff4d4d, #cc0000);
+    font-size: 0.8rem; /* Make the button smaller */
+    padding: 5px 10px; /* Adjust padding */
+    background-color: #f44336; /* Add a contrasting background color */
+    color: #fff; /* Make the text white */
+    border: none; /* Remove borders */
+    border-radius: 5px; /* Add rounded corners */
+    cursor: pointer; /* Show pointer cursor on hover */
 }
 
 .reset-button:hover {
-    background: linear-gradient(135deg, #cc0000, #990000);
+    background-color: #d32f2f; /* Slightly darker color on hover */
 }
+
 
 /* High-Tech Effects */
 body::before {

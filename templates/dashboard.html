@@ -9,7 +9,10 @@
 <body>
     <h1>Welcome, {{ user.username }}!</h1>
     <div class="menu">
-        <a href="{{ url_for('category_selection') }}" class="button">Study Mode</a>
+        <a href="{{ url_for('category_selection') }}" class="button">Study Mode</a> | 
+
+        <a href="{{ url_for('important_questions') }}"> View Important Questions </a> | 
+
 
         <a href="{{ url_for('logout') }}" class="button">Logout</a>
     </div>

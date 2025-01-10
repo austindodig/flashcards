@@ -29,18 +29,54 @@
     <div class="navigation">
         <button id="previous" {% if question_index == 0 %}disabled{% endif %}>Previous</button>
         <button id="next" {% if question_index == total - 1 %}disabled{% endif %}>Next</button>
+    </div>
+    <div class="reset-container">
         <form method="POST" action="{{ url_for('reset_questions') }}">
             <button type="submit" class="reset-button">Reset Questions</button>
         </form>
     </div>
+    
     {% else %}
     <p>No questions available. Please reset to select a topic.</p>
     <form method="POST" action="{{ url_for('reset_questions') }}">
         <button type="submit" class="reset-button">Select Topic</button>
     </form>
     {% endif %}
+    <br><br><br><br><a href="{{ url_for('dashboard') }}" class="button">Return to Main</a>
 
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const markImportantBtn = document.getElementById("mark-important");
+        
+            // Safely interpolate `question_index` as a JSON-compatible value
+            const questionIndex = "{{ question_index | default('null') }}";
+        
+            if (markImportantBtn) {
+                markImportantBtn.addEventListener("click", () => {
+                    fetch("/study/mark_important", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ question_index: parseInt(questionIndex) }),
+                    })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            if (data.success) {
+                                alert("Question marked as important!");
+                            } else {
+                                console.error("Error marking question:", data.error);
+                            }
+                        })
+                        .catch((error) => console.error("Error:", error));
+                });
+            }
+        });
+        
+        
+        
+
+
         document.addEventListener("DOMContentLoaded", () => {
             // Toggle Answer Visibility
             const toggleAnswerBtn = document.getElementById("toggle-answer");
@@ -55,6 +91,16 @@
                     toggleAnswerBtn.innerText = "Show Answer";
                 }
             });
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const progressBar = document.querySelector(".progress-bar");
+                if (progressBar) {
+                    const progress = progressBar.dataset.progress;
+                    progressBar.style.width = `${progress}%`;
+                }
+            });
+            
+            
 
             // Navigation Logic
             const navigate = (action) => {
