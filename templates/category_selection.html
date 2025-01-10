@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Category</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <h1>Select a Topic</h1>
+    <form method="POST" action="{{ url_for('study') }}">
+        <label for="topic">Select a topic:</label>
+        <select name="topic" id="topic" required>
+            {% if topics %}
+                {% for topic in topics %}
+                    <option value="{{ topic }}">{{ topic }}</option>
+                {% endfor %}
+            {% else %}
+                <option disabled>No topics available</option>
+            {% endif %}
+        </select>
+        <button type="submit" {% if not topics %}disabled{% endif %}>Start</button>
+    </form>
+</body>
+</html>

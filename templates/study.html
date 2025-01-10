@@ -4,68 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study Mode</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <h1>Study Mode</h1>
-    <form method="POST">
-        <label for="topic">Select a topic:</label>
-        <select name="topic" id="topic" required>
-            {% for topic in topics %}
-                <option value="{{ topic }}">{{ topic }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Start</button>
-    </form>
 
-    {% if current_question %}
-        <div>
-            <h2>Question {{ question_index + 1 }} of {{ total }}</h2>
-            <p id="flashcard">
-                {{ current_question['Question'] }}
-            </p>
-            <button id="toggle-answer">Show Answer</button>
-            <p id="answer" style="display:none;">
-                {{ current_question['Answer'] }}
-            </p>
+    {% if current_question and total > 0 %}
+    <div class="progress">
+        <p class="progress-text">Question {{ question_index + 1 }} of {{ total }}</p>
+        <div class="progress-bar" data-progress="{{ ((question_index + 1) / total) * 100 }}"></div>
+    </div>
+
+    <!-- Flashcard -->
+    <div class="flashcard" id="flashcard">
+        <div class="flashcard-content">
+            <p id="flashcard-text">{{ current_question['Question'] }}</p>
         </div>
-        <div>
-            <button id="previous" {% if question_index == 0 %}disabled{% endif %}>Previous</button>
-            <button id="next" {% if question_index == total - 1 %}disabled{% endif %}>Next</button>
-        </div>
+        <button id="toggle-answer">Show Answer</button>
+        <p id="answer" style="display: none;">{{ current_question['Answer'] }}</p>
+        <button id="mark-important">Mark as Important</button>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button id="previous" {% if question_index == 0 %}disabled{% endif %}>Previous</button>
+        <button id="next" {% if question_index == total - 1 %}disabled{% endif %}>Next</button>
+        <form method="POST" action="{{ url_for('reset_questions') }}">
+            <button type="submit" class="reset-button">Reset Questions</button>
+        </form>
+    </div>
+    {% else %}
+    <p>No questions available. Please reset to select a topic.</p>
+    <form method="POST" action="{{ url_for('reset_questions') }}">
+        <button type="submit" class="reset-button">Select Topic</button>
+    </form>
     {% endif %}
 
     <script>
-        const toggleAnswerBtn = document.getElementById('toggle-answer');
-        const answerElement = document.getElementById('answer');
-
-        toggleAnswerBtn.addEventListener('click', () => {
-            if (answerElement.style.display === 'none') {
-                answerElement.style.display = 'block';
-                toggleAnswerBtn.innerText = 'Hide Answer';
-            } else {
-                answerElement.style.display = 'none';
-                toggleAnswerBtn.innerText = 'Show Answer';
+        // Update progress bar dynamically
+        document.addEventListener("DOMContentLoaded", () => {
+            const progressBar = document.querySelector(".progress-bar");
+            if (progressBar) {
+                const progress = progressBar.getAttribute("data-progress") || 0;
+                progressBar.style.width = `${progress}%`;
             }
         });
-
-        const navigate = (action) => {
-            fetch('/study/navigation', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ action }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.error) {
-                    window.location.reload();
-                }
-            });
-        };
-
-        document.getElementById('previous').addEventListener('click', () => navigate('previous'));
-        document.getElementById('next').addEventListener('click', () => navigate('next'));
     </script>
 </body>
 </html>

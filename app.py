@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_socketio import SocketIO
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import pandas as pd
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_sqlalchemy import SQLAlchemy
 import random  # For random question selection
 
 # Initialize the Flask app
@@ -38,6 +38,7 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
@@ -45,6 +46,7 @@ def login():
             session['user_id'] = user.id
             return redirect(url_for('dashboard'))
         return "Invalid credentials. Please try again."
+    session.pop('study_questions', None)
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -70,39 +72,45 @@ def dashboard():
     user = User.query.get(session['user_id'])
     return render_template('dashboard.html', user=user)
 
-# Create tables
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    socketio.run(app, debug=True)
-
-
-
-#####STUDY MODE######
 @app.route('/study', methods=['GET', 'POST'])
 def study():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
+    # POST: Handle topic selection
     if request.method == 'POST':
-        # Handle topic selection and random question generation
         selected_topic = request.form.get('topic')
+        session.pop('study_questions', None)
+        session.pop('current_question', None)
+        session.pop('important_questions', None)
+
         filtered_questions = questions_df[questions_df['Topic'] == selected_topic]
         if filtered_questions.empty:
             return "No questions found for the selected topic.", 400
 
-        # Randomly select 10 questions
         selected_questions = filtered_questions.sample(min(10, len(filtered_questions))).to_dict('records')
         session['study_questions'] = selected_questions
         session['current_question'] = 0  # Start at the first question
         return redirect(url_for('study'))
 
-    # GET: Display the study page
-    topics = questions_df['Topic'].unique()
-    current_question_index = session.get('current_question', 0)
-    study_questions = session.get('study_questions', [])
+    # GET: Clear session variables if questions are not already set
+   
+    # if request.method == 'GET':
+    #     if 'study_quest ions' not in session:
+    #         session.pop('study_questions', None)
+    #         session.pop('current_question', None)
+    #         session.pop('important_questions', None)
 
-    current_question = study_questions[current_question_index] if study_questions else None
+    # Display topics and current question
+    topics = questions_df['Topic'].unique().tolist()
+    study_questions = session.get('study_questions', [])
+    current_question_index = session.get('current_question')
+    current_question = (
+        study_questions[current_question_index]
+        if study_questions and current_question_index is not None
+        else None
+    )
+
     return render_template(
         'study.html',
         topics=topics,
@@ -110,6 +118,10 @@ def study():
         question_index=current_question_index,
         total=len(study_questions)
     )
+
+
+
+
 
 @app.route('/study/navigation', methods=['POST'])
 def study_navigation():
@@ -134,9 +146,48 @@ def study_navigation():
     session['current_question'] = current_question_index
     return jsonify({"question_index": current_question_index})
 
+
+@app.route('/study/mark_important', methods=['POST'])
+def mark_important():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    data = request.get_json()
+    question_index = data.get('question_index')
+    important_questions = session.get('important_questions', [])
+    
+    if question_index not in important_questions:
+        important_questions.append(question_index)
+        session['important_questions'] = important_questions
+    
+    return jsonify({"success": True})
+
+
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    session.pop('study_questions', None)  # Clear study questions
+    session.pop('current_question', None)  # Clear current question index
+    session.pop('important_questions', None)  # Clear important questions
+    return redirect(url_for('login'))
+
+
+@app.route('/reset_questions', methods=['POST'])
+def reset_questions():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # Clear session data related to study mode
+    session.pop('study_questions', None)
+    session.pop('current_question', None)
+    session.pop('important_questions', None)
+    return redirect(url_for('study'))
+
+# Debug: Print all routes
 print(app.url_map)
 
-# Create tables
+# App execution
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

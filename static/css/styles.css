@@ -1,0 +1,178 @@
+/* General Styling */
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin: 20px 0;
+    color: #00d4ff;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Center Content */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+}
+
+/* Form Styling */
+form {
+    margin-bottom: 20px;
+    width: 100%;
+    text-align: center;
+}
+
+label {
+    font-size: 1.2rem;
+    margin-right: 10px;
+}
+
+select, button {
+    font-size: 1rem;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    margin: 10px 0;
+    width: 100%;
+    max-width: 400px;
+}
+
+select {
+    background: #1c1c1c;
+    color: #fff;
+    border: 1px solid #444;
+}
+
+select:focus {
+    border-color: #00d4ff;
+    box-shadow: 0 0 5px #00d4ff;
+}
+
+/* Button Styling */
+button {
+    background: linear-gradient(135deg, #00d4ff, #007bff);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    transform: scale(1.05);
+}
+
+button:disabled {
+    background: #555;
+    cursor: not-allowed;
+}
+
+/* Flashcard Styling */
+.flashcard {
+    background: linear-gradient(135deg, #1c1c1c, #2a2a2a);
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    margin: 20px 0;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
+
+.flashcard p {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+button#toggle-answer {
+    background: linear-gradient(135deg, #ff9900, #ff6600);
+}
+
+button#toggle-answer:hover {
+    background: linear-gradient(135deg, #ff6600, #cc5200);
+}
+
+/* Progress Bar */
+.progress {
+    margin: 20px 0;
+    width: 100%;
+    max-width: 600px;
+    background: #333;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 20px;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(135deg, #00d4ff, #007bff);
+    transition: width 0.4s ease-in-out;
+}
+
+.progress-text {
+    text-align: center;
+    margin-top: -10px;
+    font-size: 1rem;
+    color: #00d4ff;
+}
+
+/* Navigation Buttons */
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 600px;
+    margin-top: 20px;
+}
+
+.navigation button {
+    margin: 0 5px;
+    flex: 1;
+}
+
+/* Reset Button */
+.reset-button {
+    background: linear-gradient(135deg, #ff4d4d, #cc0000);
+}
+
+.reset-button:hover {
+    background: linear-gradient(135deg, #cc0000, #990000);
+}
+
+/* High-Tech Effects */
+body::before {
+    content: "";
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent);
+    animation: high-tech-animation 10s infinite linear;
+    z-index: -1;
+}
+
+@keyframes high-tech-animation {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    100% {
+        transform: rotate(360deg) scale(1.5);
+    }
+}

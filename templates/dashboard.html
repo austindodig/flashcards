@@ -7,10 +7,9 @@
 </head>
 <body>
     <h1>Welcome, {{ user.username }}!</h1>
-    <p>Your current score: {{ user.score }}</p>
-    <p>Progress: {{ user.progress }}</p>
-    <a href="/study">Study Mode</a> | <a href="/quiz">Self-Quiz Mode</a> | <a href="/competition">Competition Mode</a>
-    <br>
-    <a href="/">Log Out</a>
+    <div class="menu">
+        <a href="{{ url_for('study') }}" class="button">Study Mode</a>
+        <a href="{{ url_for('logout') }}" class="button">Logout</a>
+    </div>
 </body>
 </html>
