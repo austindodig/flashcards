@@ -127,7 +127,7 @@ button#toggle-answer:hover {
 
 .progress-text {
     text-align: center;
-    margin-top: -10px;
+    margin-top: 0px;
     font-size: 1rem;
     color: #00d4ff;
 }
@@ -175,4 +175,14 @@ body::before {
     100% {
         transform: rotate(360deg) scale(1.5);
     }
+}
+
+a {
+    color: white;
+    text-decoration: none; /* Optional: Removes underline from links */
+}
+
+a:hover {
+    color: lightgray; /* Optional: Changes color on hover for better visibility */
+    text-decoration: underline; /* Optional: Adds underline on hover */
 }

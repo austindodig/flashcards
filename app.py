@@ -82,38 +82,39 @@ def study():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    # POST: Handle topic selection
     if request.method == 'POST':
         selected_topic = request.form.get('topic')
         session.pop('study_questions', None)
         session.pop('current_question', None)
         session.pop('important_questions', None)
 
-        filtered_questions = questions_df[questions_df['Topic'] == selected_topic]
+        filtered_questions = questions_df[
+            questions_df['Topic'].str.strip().str.lower() == selected_topic.strip().lower()
+        ]
         if filtered_questions.empty:
-            return "No questions found for the selected topic.", 400
+            return render_template(
+                'study.html',
+                topics=questions_df['Topic'].dropna().unique().tolist(),
+                current_question=None,
+                question_index=None,
+                total=0,
+                error="No questions available for the selected topic. Please select another topic."
+            )
 
         selected_questions = filtered_questions.sample(min(10, len(filtered_questions))).to_dict('records')
         session['study_questions'] = selected_questions
-        session['current_question'] = 0  # Start at the first question
+        session['current_question'] = 0
         return redirect(url_for('study'))
 
-    # GET: Clear session variables if questions are not already set
-   
-    # if request.method == 'GET':
-    #     if 'study_quest ions' not in session:
-    #         session.pop('study_questions', None)
-    #         session.pop('current_question', None)
-    #         session.pop('important_questions', None)
+    topics = questions_df['Topic'].dropna().unique().tolist()  # Remove nan values
+    print(f"DEBUG: Topics available: {topics}")  # Debug
 
-    # Display topics and current question
-    topics = questions_df['Topic'].unique().tolist()
     study_questions = session.get('study_questions', [])
     current_question_index = session.get('current_question')
     current_question = (
         study_questions[current_question_index]
         if study_questions and current_question_index is not None
-        else None
+        else None   
     )
 
     return render_template(
@@ -121,10 +122,18 @@ def study():
         topics=topics,
         current_question=current_question,
         question_index=current_question_index,
-        total=len(study_questions)
+        total=len(study_questions),
+        error=None
     )
 
-
+@app.route('/category_selection', methods=['GET'])
+def category_selection():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    topics = questions_df['Topic'].dropna().unique().tolist()
+    print(f"DEBUG: Topics sent to category selection: {topics}")  # Debug
+    return render_template('category_selection.html', topics=topics)
 
 
 
@@ -135,6 +144,7 @@ def study_navigation():
         return redirect(url_for('login'))
 
     action = request.json.get('action')
+    print(f"DEBUG: Received navigation action: {action}")  # Debug
     if action not in ['next', 'previous']:
         return jsonify({"error": "Invalid action"}), 400
 
@@ -149,6 +159,7 @@ def study_navigation():
         current_question_index -= 1
 
     session['current_question'] = current_question_index
+    print(f"DEBUG: Updated current_question_index: {current_question_index}")  # Debug
     return jsonify({"question_index": current_question_index})
 
 
@@ -187,7 +198,11 @@ def reset_questions():
     session.pop('study_questions', None)
     session.pop('current_question', None)
     session.pop('important_questions', None)
-    return redirect(url_for('study'))
+    return redirect(url_for('category_selection'))
+
+@app.route('/debug_questions')
+def debug_questions():
+    return jsonify(questions_df.to_dict(orient='records'))
 
 # Debug: Print all routes
 print(app.url_map)
@@ -197,4 +212,5 @@ print(app.url_map)
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    socketio.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
+    socketio.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 25002)), debug=True)
+

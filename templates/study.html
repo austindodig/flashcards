@@ -41,13 +41,43 @@
     {% endif %}
 
     <script>
-        // Update progress bar dynamically
         document.addEventListener("DOMContentLoaded", () => {
-            const progressBar = document.querySelector(".progress-bar");
-            if (progressBar) {
-                const progress = progressBar.getAttribute("data-progress") || 0;
-                progressBar.style.width = `${progress}%`;
-            }
+            // Toggle Answer Visibility
+            const toggleAnswerBtn = document.getElementById("toggle-answer");
+            const answerElement = document.getElementById("answer");
+
+            toggleAnswerBtn?.addEventListener("click", () => {
+                if (answerElement.style.display === "none") {
+                    answerElement.style.display = "block";
+                    toggleAnswerBtn.innerText = "Hide Answer";
+                } else {
+                    answerElement.style.display = "none";
+                    toggleAnswerBtn.innerText = "Show Answer";
+                }
+            });
+
+            // Navigation Logic
+            const navigate = (action) => {
+                fetch("/study/navigation", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ action }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (!data.error) {
+                            window.location.reload();
+                        } else {
+                            console.error(data.error);
+                        }
+                    })
+                    .catch((error) => console.error("Error:", error));
+            };
+
+            document.getElementById("previous")?.addEventListener("click", () => navigate("previous"));
+            document.getElementById("next")?.addEventListener("click", () => navigate("next"));
         });
     </script>
 </body>
