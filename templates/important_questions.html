@@ -12,13 +12,15 @@
     {% if important_questions %}
         <ul>
             {% for question in important_questions %}
-                <li>
-                    <strong>Topic:</strong> {{ question['topic'] }}<br>
-                    <strong>Question:</strong> {{ question['question'] }}<br>
-                    <strong>Answer:</strong> {{ question['answer'] }}<br>
-                    <button class="remove-btn" data-question="{{ question['question'] }}">Remove</button>
-                </li>
-            {% endfor %}
+            <li>
+                <strong>Topic:</strong> {{ question['topic'] }}<br>
+                <strong>Question:</strong> {{ question['question'] }}<br>
+                <strong>Answer:</strong> {{ question['answer'] }}
+                <button class="remove-button" data-index="{{ loop.index0 }}">Remove</button>
+            </li>
+        {% endfor %}
+        
+        
         </ul>
     {% else %}
         <p>No important questions found.</p>
@@ -27,29 +29,25 @@
     <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
 
     <script>
-        document.querySelectorAll('.remove-btn').forEach(button => {
+        document.querySelectorAll('.remove-button').forEach(button => {
             button.addEventListener('click', () => {
-                const question = button.getAttribute('data-question');
-
+                const questionIndex = button.getAttribute('data-index');
+        
                 fetch('/important/remove', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ question }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Question removed!');
-                        window.location.reload();
-                    } else {
-                        console.error('Error removing question');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ index: questionIndex })
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          button.parentElement.remove();
+                      } else {
+                          console.error('Error:', data.error);
+                      }
+                  });
             });
         });
+        
     </script>
 </body>
 </html>

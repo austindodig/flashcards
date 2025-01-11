@@ -10,6 +10,7 @@ import random  # For random question selection
 import eventlet
 import json
 #from flask_migrate import Migrate
+from sqlalchemy.dialects.sqlite import JSON
 
 
 eventlet.monkey_patch()
@@ -24,14 +25,16 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
 
-# Database Models
+
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     score = db.Column(db.Integer, default=0)
     progress = db.Column(db.String(256), default="")
-    important_questions = db.Column(db.Text, default="")
+    important_questions = db.Column(JSON, default=[])
+
 
 #migrate = Migrate(app, db)
 
@@ -198,42 +201,69 @@ def debug_questions():
     return jsonify(questions_df.to_dict(orient='records'))
 
 import json  # To handle serialization
-
 @app.route('/study/mark_important', methods=['POST'])
 def mark_important():
     if 'user_id' not in session:
-        return redirect(url_for('login'))
+        return jsonify({"error": "User not logged in"}), 403
 
     data = request.get_json()
     question_index = data.get('question_index')
+    user = User.query.get(session['user_id'])
+
+    # Ensure study_questions and user are valid
     study_questions = session.get('study_questions', [])
-    
-    if study_questions and question_index is not None:
-        question = study_questions[question_index]
-        topic = question.get('Topic', 'Unknown Topic')
-        important_questions = session.get('important_questions', [])
+    if not user or question_index is None or not (0 <= question_index < len(study_questions)):
+        return jsonify({"error": "Invalid request"}), 400
 
-        question_entry = {'topic': topic, 'question': question['Question'], 'answer': question['Answer']}
-        
-        if question_entry not in important_questions:
-            important_questions.append(question_entry)
-            session['important_questions'] = important_questions
+    # Get the selected question and its topic
+    current_question = study_questions[question_index]
+    topic = current_question.get('Topic', 'Unknown')
+    question = current_question.get('Question', 'Unknown')
+    answer = current_question.get('Answer', 'Unknown')
 
-    return jsonify({"success": True})
+    # Initialize the important_questions list if empty
+    if not user.important_questions:
+        user.important_questions = []
+
+    # Ensure all entries in important_questions have the required keys
+    user.important_questions = [
+        q for q in user.important_questions 
+        if all(key in q for key in ['topic', 'question', 'answer'])
+    ]
+
+    # Check if the question is already marked as important
+    for q in user.important_questions:
+        if q.get('question') == question and q.get('topic') == topic:
+            return jsonify({"success": False, "message": "Question already marked as important"}), 200
+
+    # Append the question to the important_questions list
+    user.important_questions.append({
+        "topic": topic,
+        "question": question,
+        "answer": answer
+    })
+
+    # Commit the changes to the database
+    db.session.commit()
+    return jsonify({"success": True, "message": "Question marked as important!"})
+
 
 @app.route('/important/remove', methods=['POST'])
-def remove_important():
+def remove_important_question():
     if 'user_id' not in session:
-        return redirect(url_for('login'))
+        return jsonify({"error": "User not logged in"}), 403
 
     data = request.get_json()
-    question_to_remove = data.get('question')
+    index = int(data.get('index'))
+    user = User.query.get(session['user_id'])
 
-    important_questions = session.get('important_questions', [])
-    updated_questions = [q for q in important_questions if q['question'] != question_to_remove]
-    session['important_questions'] = updated_questions
+    # Validate index and remove the question
+    if 0 <= index < len(user.important_questions):
+        user.important_questions.pop(index)
+        db.session.commit()
+        return jsonify({"success": True})
 
-    return jsonify({"success": True})
+    return jsonify({"error": "Invalid question index"}), 400
 
 
 @app.route('/important_questions')
@@ -241,8 +271,12 @@ def important_questions():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    important_questions = session.get('important_questions', [])
-    return render_template('important_questions.html', important_questions=important_questions)
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+    
+    if user:
+        return render_template('important_questions.html', important_questions=user.important_questions)
+    return redirect(url_for('dashboard'))
 
 # Debug: Print all routes
 print(app.url_map)
