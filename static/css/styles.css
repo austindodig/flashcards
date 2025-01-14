@@ -1,201 +1,188 @@
-/* General Styling */
+/* General Styles */
 body {
-    font-family: 'Roboto', sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    color: #fff;
+    font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
+    background-color: #121212; /* Dark background */
+    color: #ffffff; /* Light text */
 }
 
-h1 {
-    font-size: 2.5rem;
-    margin: 20px 0;
-    color: #00d4ff;
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-}
-
-/* Center Content */
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 800px;
-    padding: 20px;
-}
-
-/* Form Styling */
-form {
-    margin-bottom: 20px;
-    width: 100%;
+/* Headings */
+h1, h2, h3 {
     text-align: center;
+    color: #00e5ff; /* Neon cyan */
 }
 
-label {
-    font-size: 1.2rem;
-    margin-right: 10px;
-}
-
-select, button {
-    font-size: 1rem;
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: none;
-    outline: none;
-    margin: 10px 0;
-    width: 100%;
-    max-width: 400px;
-}
-
-select {
-    background: #1c1c1c;
-    color: #fff;
-    border: 1px solid #444;
-}
-
-select:focus {
-    border-color: #00d4ff;
-    box-shadow: 0 0 5px #00d4ff;
-}
-
-/* Button Styling */
+/* Buttons */
 button {
-    background: linear-gradient(135deg, #00d4ff, #007bff);
-    color: white;
+    background-color: #00e5ff; /* Neon cyan */
     border: none;
-    border-radius: 5px;
+    color: #121212; /* Dark text for contrast */
+    padding: 10px 20px;
+    font-size: 1rem;
     cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border-radius: 5px;
 }
 
 button:hover {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    transform: scale(1.05);
+    background-color: #00b2cc; /* Darker neon cyan for hover */
+    color: #ffffff; /* White text on hover */
 }
 
-button:disabled {
-    background: #555;
-    cursor: not-allowed;
+button.reset-button {
+    background-color: #ff4081; /* Neon pink for reset button */
+    color: #121212;
+    padding: 8px 8px;
+    font-size: 0.9rem;
 }
 
-/* Flashcard Styling */
+button.reset-button:hover {
+    background-color: #cc3364; /* Darker pink on hover */
+    color: #ffffff;
+}
+
+/* Links */
+a {
+    color: #00e5ff; /* Neon cyan for links */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #ff4081; /* Neon pink for hover */
+}
+
+/* Flashcard */
 .flashcard {
-    background: linear-gradient(135deg, #1c1c1c, #2a2a2a);
-    color: white;
+    background-color: #1f1f1f; /* Slightly lighter dark background */
+    color: #ffffff;
+    border: 2px solid #00e5ff; /* Neon cyan border */
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     padding: 20px;
-    margin: 20px 0;
-    width: 100%;
+    margin: 20px auto;
     max-width: 600px;
     text-align: center;
+    box-shadow: 0 0 15px #00e5ff;
 }
 
-.flashcard p {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
+.flashcard-content {
+    font-size: 1.2rem;
+    line-height: 1.6;
 }
 
-button#toggle-answer {
-    background: linear-gradient(135deg, #ff9900, #ff6600);
-}
-
-button#toggle-answer:hover {
-    background: linear-gradient(135deg, #ff6600, #cc5200);
+/* Navigation */
+.navigation {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
 }
 
 /* Progress Bar */
 .progress {
-    margin: 20px 0;
-    width: 100%;
+    margin: 20px auto;
     max-width: 600px;
-    background: #333;
+    background-color: #2c2c2c; /* Slightly lighter background */
     border-radius: 10px;
     overflow: hidden;
-    height: 20px;
 }
 
 .progress-bar {
-    height: 100%;
-    background: linear-gradient(135deg, #00d4ff, #007bff);
-    transition: width 0.4s ease-in-out;
+    height: 20px;
+    background-color: #00e5ff; /* Neon cyan */
+    width: 0%; /* Dynamically updated */
+    transition: width 0.3s ease;
 }
 
 .progress-text {
     text-align: center;
-    margin-top: 0px;
+    margin-top: 10px;
     font-size: 1rem;
-    color: #00d4ff;
+    color: #ffffff;
 }
 
-/* Navigation Buttons */
-.navigation {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
+/* Forms */
+form {
+    margin: 20px auto;
+    max-width: 400px;
+    padding: 20px;
+    background-color: #1f1f1f;
+    border-radius: 10px;
+    box-shadow: 0 0 15px #00e5ff;
+}
+
+/* Lists */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #1f1f1f;
+    border-radius: 5px;
+    box-shadow: 0 0 10px #00e5ff;
+}
+
+li strong {
+    color: #ff4081; /* Neon pink for emphasis */
+}
+
+/* Flashcard */
+.flashcard {
+    background-color: #1f1f1f;
+    color: #ffffff;
+    border: 2px solid #00e5ff;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px auto;
     max-width: 600px;
+    text-align: center;
+    box-shadow: 0 0 15px #00e5ff;
+}
+
+/* Answer Options */
+.answers {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
     margin-top: 20px;
 }
 
-.navigation button {
-    margin: 0 5px;
-    flex: 1;
+.answer {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 2px solid #00e5ff;
+    border-radius: 5px;
+    padding: 10px 20px;
+    text-align: center;
+    cursor: pointer;
+    flex: 1 1 calc(50% - 20px);
+    box-shadow: 0 0 10px #00e5ff;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Style for the reset button container */
-.reset-container {
-    text-align: center; /* Center the button horizontally */
-    margin-top: 10px; /* Add space above the button */
+.answer:hover {
+    background-color: #00e5ff;
+    color: #121212;
 }
 
-/* Style for the reset button */
-.reset-button {
-    font-size: 0.8rem; /* Make the button smaller */
-    padding: 5px 10px; /* Adjust padding */
-    background-color: #f44336; /* Add a contrasting background color */
-    color: #fff; /* Make the text white */
-    border: none; /* Remove borders */
-    border-radius: 5px; /* Add rounded corners */
-    cursor: pointer; /* Show pointer cursor on hover */
+.answer.selected {
+    border-color: #ffffff;
+    box-shadow: 0 0 20px #ffffff;
 }
 
-.reset-button:hover {
-    background-color: #d32f2f; /* Slightly darker color on hover */
+.answer.correct {
+    background-color: #4caf50;
+    color: #ffffff;
+    border-color: #4caf50;
 }
 
-
-/* High-Tech Effects */
-body::before {
-    content: "";
-    position: absolute;
-    width: 200%;
-    height: 200%;
-    top: -50%;
-    left: -50%;
-    background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent);
-    animation: high-tech-animation 10s infinite linear;
-    z-index: -1;
-}
-
-@keyframes high-tech-animation {
-    0% {
-        transform: rotate(0deg) scale(1);
-    }
-    100% {
-        transform: rotate(360deg) scale(1.5);
-    }
-}
-
-a {
-    color: white;
-    text-decoration: none; /* Optional: Removes underline from links */
-}
-
-a:hover {
-    color: lightgray; /* Optional: Changes color on hover for better visibility */
-    text-decoration: underline; /* Optional: Adds underline on hover */
+.answer.incorrect {
+    background-color: #f44336;
+    color: #ffffff;
+    border-color: #f44336;
 }

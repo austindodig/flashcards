@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script>
+        function selectAnswer(selected) {
+            const answers = document.querySelectorAll(".answer");
+            answers.forEach(answer => {
+                answer.classList.remove("selected", "correct", "incorrect");
+                if (answer.dataset.correct === "true") {
+                    answer.classList.add("correct");
+                } else {
+                    answer.classList.add("incorrect");
+                }
+            });
+
+            selected.classList.add("selected");
+
+            // Show the "Next Question" button
+            document.getElementById("next-question").style.display = "inline-block";
+
+            // Set the selected answer for form submission
+            document.getElementById("selected-answer").value = selected.textContent.trim();
+        }
+    </script>
+</head>
+<body>
+    <h1>Question {{ question_index }} of {{ total }}</h1>
+
+    <div class="flashcard">
+        <p>{{ question['question'] }}</p>
+    </div>
+
+    <div class="answers">
+        {% for choice in question['choices'] %}
+            <div 
+                class="answer" 
+                data-correct="{{ 'true' if choice.correct else 'false' }}" 
+                onclick="selectAnswer(this)">
+                {{ choice.text }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Form for submitting the answer -->
+    <form method="POST" action="{{ url_for('self_quiz_question') }}" id="next-question-form">
+        <input type="hidden" name="answer" id="selected-answer">
+        <button id="next-question" style="display: none;">Next Question</button>
+    </form>
+
+    <a href="{{ url_for('self_quiz_results') }}">End Quiz</a>
+</body>
+</html>

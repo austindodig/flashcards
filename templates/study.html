@@ -30,9 +30,10 @@
         <button id="previous" {% if question_index == 0 %}disabled{% endif %}>Previous</button>
         <button id="next" {% if question_index == total - 1 %}disabled{% endif %}>Next</button>
     </div>
+    <br><br><br><br> <br><br><br><br>
     <div class="reset-container">
         <form method="POST" action="{{ url_for('reset_questions') }}">
-            <button type="submit" class="reset-button">Reset Questions</button>
+            <center><button type="submit" class="reset-button">Reset Questions</button></center>
         </form>
     </div>
     
@@ -42,7 +43,7 @@
         <button type="submit" class="reset-button">Select Topic</button>
     </form>
     {% endif %}
-    <br><br><br><br><a href="{{ url_for('dashboard') }}" class="button">Return to Main</a>
+    <br><br><br><br><center><a href="{{ url_for('dashboard') }}" class="button">Return to Main</a></center>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {

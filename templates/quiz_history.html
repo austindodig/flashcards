@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <center><h1>Quiz History</h1>
+
+    {% if results %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Topic</th>
+                    <th>Score</th>
+                    <th>Total Questions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                    <tr>
+                        <td>{{ result.date_taken.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ result.topic }}</td>
+                        <td>{{ result.score }}</td>
+                        <td>{{ result.total_questions }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No quiz history available.</p>
+    {% endif %}
+<br>
+<br>
+<br>
+<br>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a></center>
+</body>
+</html>

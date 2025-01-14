@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self Quiz Setup</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script>
+        // Dynamically update the max number of questions based on the selected topic
+        function updateMaxQuestions(topics) {
+            const topicSelect = document.getElementById("topic");
+            const numQuestionsInput = document.getElementById("num_questions");
+            const selectedTopic = topicSelect.value;
+
+            // Get the max questions for the selected topic
+            const maxQuestions = topics[selectedTopic] || 1;
+            numQuestionsInput.max = maxQuestions;
+            numQuestionsInput.value = Math.min(numQuestionsInput.value, maxQuestions);
+        }
+    </script>
+</head>
+<body>
+    <h1>Self Quiz Setup</h1>
+
+    <!-- Render the topics object into JavaScript -->
+    <script>
+        const topics = JSON.parse('{{ topics | tojson | safe }}');
+    
+        function updateMaxQuestions(topics) {
+            const topicSelect = document.getElementById("topic");
+            const numQuestionsInput = document.getElementById("num_questions");
+            const selectedTopic = topicSelect.value;
+    
+            const maxQuestions = topics[selectedTopic] || 1;
+            numQuestionsInput.max = maxQuestions;
+            numQuestionsInput.value = Math.min(numQuestionsInput.value, maxQuestions);
+        }
+    
+        document.getElementById("topic").addEventListener("change", () => updateMaxQuestions(topics));
+    </script>
+
+    <form method="POST" action="{{ url_for('self_quiz_setup') }}">
+        <label for="topic">Select a Topic:</label>
+        <select name="topic" id="topic" required onchange="updateMaxQuestions(topics)">
+            {% for topic, count in topics.items() %}
+                <option value="{{ topic }}">{{ topic }}</option>
+            {% endfor %}
+        </select>
+        
+    
+        <label for="num_questions">Number of Questions:</label>
+        <input type="number" name="num_questions" id="num_questions" min="1" value="5" required>
+    
+        <button type="submit">Start Quiz</button>
+    </form>
+    
+</body>
+</html>
+
+
+
+

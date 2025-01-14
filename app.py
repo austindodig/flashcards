@@ -9,8 +9,12 @@ import pandas as pd
 import random  # For random question selection
 import eventlet
 import json
-#from flask_migrate import Migrate
+from flask_migrate import Migrate
 from sqlalchemy.dialects.sqlite import JSON
+from datetime import datetime
+from random import sample
+
+
 
 
 eventlet.monkey_patch()
@@ -35,8 +39,18 @@ class User(db.Model):
     progress = db.Column(db.String(256), default="")
     important_questions = db.Column(JSON, default=[])
 
+class QuizResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    topic = db.Column(db.String(255), nullable=False)
+    score = db.Column(db.Integer, nullable=False)
+    total_questions = db.Column(db.Integer, nullable=False)
+    date_taken = db.Column(db.DateTime, default=datetime.utcnow)
+    questions = db.Column(db.Text, nullable=False)  # This column is causing the error
 
-#migrate = Migrate(app, db)
+
+
+migrate = Migrate(app, db)
 
 # Load questions from Excel
 QUESTIONS_FILE = 'questions.csv'
@@ -251,19 +265,28 @@ def mark_important():
 @app.route('/important/remove', methods=['POST'])
 def remove_important_question():
     if 'user_id' not in session:
-        return jsonify({"error": "User not logged in"}), 403
+        return jsonify({'error': 'User not logged in'}), 401
 
-    data = request.get_json()
-    index = int(data.get('index'))
     user = User.query.get(session['user_id'])
+    data = request.get_json()
 
-    # Validate index and remove the question
-    if 0 <= index < len(user.important_questions):
-        user.important_questions.pop(index)
-        db.session.commit()
-        return jsonify({"success": True})
+    question_to_remove = data.get('question')
+    topic_to_remove = data.get('topic')
 
-    return jsonify({"error": "Invalid question index"}), 400
+    if not question_to_remove or not topic_to_remove:
+        return jsonify({'error': 'Invalid data provided'}), 400
+
+    # Update the user's important questions list
+    user.important_questions = [
+        q for q in user.important_questions
+        if not (q['question'] == question_to_remove and q['topic'] == topic_to_remove)
+    ]
+
+    # Commit changes to the database
+    db.session.commit()
+
+    return jsonify({'success': True}), 200
+
 
 
 @app.route('/important_questions')
@@ -277,6 +300,150 @@ def important_questions():
     if user:
         return render_template('important_questions.html', important_questions=user.important_questions)
     return redirect(url_for('dashboard'))
+
+
+@app.route('/self_quiz', methods=['GET', 'POST'])
+def self_quiz_setup():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    # Dynamically generate topics from the user's current saved important questions
+    topics = {q['topic']: len([q for q in user.important_questions if q['topic'] == q['topic']]) for q in user.important_questions}
+
+    if request.method == 'POST':
+        topic = request.form.get('topic')
+        num_questions = int(request.form.get('num_questions'))
+        session['self_quiz_topic'] = topic
+        session['self_quiz_num_questions'] = num_questions
+        return redirect(url_for('start_self_quiz'))
+
+    return render_template('self_quiz_setup.html', topics=topics)
+
+
+@app.route('/self_quiz/start', methods=['GET'])
+def start_self_quiz():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    topic = session.get('self_quiz_topic')
+    num_questions = session.get('self_quiz_num_questions')
+
+    # Filter important questions for the selected topic
+    user_topic_questions = [q for q in user.important_questions if q['topic'] == topic]
+    total_user_topic_questions = len(user_topic_questions)
+
+    # Set the number of questions to the smaller of user's input or available questions
+    if num_questions > total_user_topic_questions:
+        num_questions = total_user_topic_questions
+
+    # Randomly select questions for the quiz
+    selected_questions = sample(user_topic_questions, num_questions)
+
+    # Load the master question bank
+    master_questions = pd.read_csv('questions.csv')
+
+    for question in selected_questions:
+        # Find the corresponding row in the master questions bank
+        master_question = master_questions[
+            (master_questions['Question'] == question['question']) &
+            (master_questions['Topic'] == topic)
+        ]
+
+        if master_question.empty:
+            # Skip the question if no match is found in the master questions bank
+            continue
+
+        # Extract the incorrect answers
+        incorrect_answers = [
+            master_question.iloc[0]['Incorrect Answer 1'],
+            master_question.iloc[0]['Incorrect Answer 2'],
+            master_question.iloc[0]['Incorrect Answer 3']
+        ]
+
+        # Create choices and shuffle them
+        question['choices'] = [{'text': question['answer'], 'correct': True}] + \
+                              [{'text': ans, 'correct': False} for ans in incorrect_answers]
+        random.shuffle(question['choices'])  # Shuffle the choices
+
+    # Save the quiz session data
+    session['self_quiz_questions'] = selected_questions
+    session['self_quiz_index'] = 0
+    session['self_quiz_score'] = 0
+
+    return redirect(url_for('self_quiz_question'))
+
+@app.route('/self_quiz/results', methods=['GET'])
+def self_quiz_results():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Fetch session data
+    score = session.get('self_quiz_score', 0)
+    total = len(session.get('self_quiz_questions', []))
+    topic = session.get('self_quiz_topic')
+
+    # Save the result to the database
+    user_id = session['user_id']
+    questions = session.get('self_quiz_questions', [])
+    questions_text = ', '.join([q['question'] for q in questions])  # Convert questions to a single string
+
+    result = QuizResult(
+        user_id=user_id,
+        topic=topic,
+        score=score,
+        total_questions=total,
+        questions=questions_text  # Save the questions
+    )
+    db.session.add(result)
+    db.session.commit()
+
+    # Clear quiz data from session
+    session.pop('self_quiz_questions', None)
+    session.pop('self_quiz_index', None)
+    session.pop('self_quiz_score', None)
+    session.pop('self_quiz_topic', None)
+
+    return render_template('quiz_results.html', score=score, total=total)
+
+
+
+@app.route('/self_quiz/question', methods=['GET', 'POST'])
+def self_quiz_question():
+    if 'user_id' not in session or 'self_quiz_questions' not in session:
+        return redirect(url_for('self_quiz_setup'))
+
+    quiz_questions = session['self_quiz_questions']
+    quiz_index = session['self_quiz_index']
+
+    if request.method == 'POST':
+        user_answer = request.form.get('answer')
+        correct_answer = quiz_questions[quiz_index]['answer']
+        quiz_questions[quiz_index]['user_answer'] = user_answer
+
+        if user_answer == correct_answer:
+            session['self_quiz_score'] += 1
+
+        session['self_quiz_index'] += 1
+        if session['self_quiz_index'] >= len(quiz_questions):
+            return redirect(url_for('self_quiz_results'))
+
+        return redirect(url_for('self_quiz_question'))
+
+    current_question = quiz_questions[quiz_index]
+    return render_template('self_quiz.html', question=current_question, question_index=quiz_index + 1, total=len(quiz_questions))
+
+@app.route('/quiz/history', methods=['GET'])
+def quiz_history():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    results = QuizResult.query.filter_by(user_id=user_id).order_by(QuizResult.date_taken.desc()).all()
+
+    return render_template('quiz_history.html', results=results)
+
 
 # Debug: Print all routes
 print(app.url_map)

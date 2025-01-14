@@ -7,14 +7,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <h1>Welcome, {{ user.username }}!</h1>
-    <div class="menu">
+    <h1>Welcome, {{ user.username }}!</h1><br><br><br>
+    <center><div class="menu">
         <a href="{{ url_for('category_selection') }}" class="button">Study Mode</a> | 
 
         <a href="{{ url_for('important_questions') }}"> View Important Questions </a> | 
 
-
+        <a href="{{ url_for('self_quiz_setup') }}" class="button">Quiz Mode</a> | 
+        <a href="{{ url_for('quiz_history') }}" class="button">Quiz History</a> | 
         <a href="{{ url_for('logout') }}" class="button">Logout</a>
-    </div>
+    </div></center>
 </body>
 </html>

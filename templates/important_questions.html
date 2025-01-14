@@ -10,18 +10,20 @@
     <h1>Important Questions</h1>
 
     {% if important_questions %}
-        <ul>
-            {% for question in important_questions %}
-            <li>
-                <strong>Topic:</strong> {{ question['topic'] }}<br>
-                <strong>Question:</strong> {{ question['question'] }}<br>
-                <strong>Answer:</strong> {{ question['answer'] }}
-                <button class="remove-button" data-index="{{ loop.index0 }}">Remove</button>
-            </li>
+    <ul>
+        {% for question in important_questions %}
+        <li>
+            <strong>Topic:</strong> {{ question['topic'] }}<br>
+            <strong>Question:</strong> {{ question['question'] }}<br>
+            <strong>Answer:</strong> {{ question['answer'] }}
+            <button 
+            onclick="removeImportantQuestion('{{ question['question'] | escape | safe }}', '{{ question['topic'] | escape | safe }}', this)">
+            Remove
+        </button>
+        
+        </li>
         {% endfor %}
-        
-        
-        </ul>
+    </ul>
     {% else %}
         <p>No important questions found.</p>
     {% endif %}
@@ -29,25 +31,31 @@
     <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
 
     <script>
-        document.querySelectorAll('.remove-button').forEach(button => {
-            button.addEventListener('click', () => {
-                const questionIndex = button.getAttribute('data-index');
-        
-                fetch('/important/remove', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ index: questionIndex })
-                }).then(response => response.json())
-                  .then(data => {
-                      if (data.success) {
-                          button.parentElement.remove();
-                      } else {
-                          console.error('Error:', data.error);
-                      }
-                  });
-            });
-        });
-        
+
+        function removeImportantQuestion(question, topic, button) {
+    fetch('/important/remove', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ question: question, topic: topic })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            button.closest('li').remove();
+            alert('Question removed successfully!');
+        } else {
+            console.error('Backend Error:', data.error);
+            alert('Error removing question: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Fetch Error:', error);
+        alert('An error occurred while removing the question.');
+    });
+}
+
     </script>
 </body>
 </html>
