@@ -9,7 +9,7 @@ import pandas as pd
 import random  # For random question selection
 import eventlet
 import json
-from flask_migrate import Migrate
+#from flask_migrate import Migrate
 from sqlalchemy.dialects.sqlite import JSON
 from datetime import datetime
 from random import sample
@@ -50,7 +50,7 @@ class QuizResult(db.Model):
 
 
 
-migrate = Migrate(app, db)
+#migrate = Migrate(app, db)
 
 # Load questions from Excel
 QUESTIONS_FILE = 'questions.csv'
